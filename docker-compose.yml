@@ -18,3 +18,7 @@ services:
     volumes:
       - .wwebjs_auth:/app/.wwebjs_auth 
     restart: unless-stopped
+
+volumes:
+  wwebjs_auth:
+    external: true
