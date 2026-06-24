@@ -1,29 +1,20 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  # MOTOR 1: O Frontend Next.js
   frontend-app:
     build: ./projeto-nextjs-mvvidros
     container_name: mvvidros-frontend
-    ports:
-      - "3000:3000"
     environment:
       - WHATSAPP_API_URL=http://whatsapp-bot:3001/api/send-pdf
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
     restart: unless-stopped
     depends_on:
-      - whatsapp-bot # Garante que o painel só liga depois que o robô nascer
+      - whatsapp-bot
 
-  # MOTOR 2: O Robô do WhatsApp
   whatsapp-bot:
     build: ./api-whatsapp-mvvidros
     container_name: mvvidros-bot
-    ports:
-      - "3001:3001"
     volumes:
-      - ./api-whatsapp-mvvidros:/app
-      # SUPER IMPORTANTE: Salva a pasta de autenticação fora do contêiner
-      # para você não precisar ler o QR Code toda vez que desligar o PC!
-      - .wwebjs_auth:/app/.wwebjs_auth
+      - .wwebjs_auth:/app/.wwebjs_auth 
     restart: unless-stopped
