@@ -49,3 +49,5 @@ COPY . .
 RUN npm run build
 EXPOSE 3000
 CMD ["npm", "start"]
+
+# Forçando limpeza de cache V1

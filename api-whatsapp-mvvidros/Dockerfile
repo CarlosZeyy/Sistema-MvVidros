@@ -22,3 +22,5 @@ EXPOSE 3001
 
 # O comando para ligar o robô
 CMD ["node", "index.js"]
+
+# Forçando limpeza de cache V1
