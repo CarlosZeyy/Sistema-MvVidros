@@ -9,19 +9,19 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
 const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--disable-gpu'
-        ],
-        timeout: 120000,          // Dá 2 minutos de paciência para o navegador abrir
-        protocolTimeout: 300000   // Dá 5 minutos de tolerância para o WhatsApp carregar os contatos
-    }
+  authStrategy: new LocalAuth(),
+  puppeteer: {
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+    ],
+    timeout: 120000, // Dá 2 minutos de paciência para o navegador abrir
+    protocolTimeout: 300000, // Dá 5 minutos de tolerância para o WhatsApp carregar os contatos
+  },
 });
 
 client.on("qr", (qrcodeText) => {
@@ -36,17 +36,24 @@ app.post("/api/send-pdf", async (req, res) => {
   try {
     let cleanNumber = req.body.tel.replace(/\D/g, "");
 
-    // Se a pessoa digitou só 9 ou 8 números (esqueceu o DDD), o sistema injeta o 11 automaticamente.
     if (cleanNumber.length === 8 || cleanNumber.length === 9) {
       cleanNumber = "11" + cleanNumber;
     }
 
-    // Se a pessoa por acaso já digitou o 55 no formulário, não concatenamos de novo.
     if (!cleanNumber.startsWith("55")) {
       cleanNumber = "55" + cleanNumber;
     }
 
     const tel = cleanNumber + "@c.us";
+
+    if (!client.info || !client.info.wid) {
+      console.log("Robô ainda não está autenticado ou pronto.");
+      return res
+        .status(503)
+        .json({
+          error: "Robô não está pronto. Tente novamente em alguns segundos.",
+        });
+    }
 
     const pdf64Base = req.body.pdfBase64;
 
@@ -57,7 +64,7 @@ app.post("/api/send-pdf", async (req, res) => {
     );
 
     await client.sendMessage(tel, media, {
-      caption: `Olá ${req.body.name}, segue o orçamento em anexo.`,
+      caption: `Olá ${req.body.name}, segue o orçamento em anexo. MV Vidros`,
     });
 
     res.status(200).json({
