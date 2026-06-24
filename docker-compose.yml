@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # MOTOR 1: O Frontend Next.js
@@ -8,9 +8,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # A MÁGICA: O Next.js não usa mais o IP da sua máquina (192.168...). 
+      # A MÁGICA: O Next.js não usa mais o IP da sua máquina (192.168...).
       # Ele chama o bot pelo nome do contêiner dentro da rede interna do Docker!
       - WHATSAPP_API_URL=http://whatsapp-bot:3001/api/send-pdf
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     volumes:
       - ./projeto-nextjs-mvvidros:/app
       - /app/node_modules
@@ -30,5 +32,5 @@ services:
       - /app/node_modules
       # SUPER IMPORTANTE: Salva a pasta de autenticação fora do contêiner
       # para você não precisar ler o QR Code toda vez que desligar o PC!
-      - .wwebjs_auth:/app/.wwebjs_auth 
+      - .wwebjs_auth:/app/.wwebjs_auth
     restart: unless-stopped
