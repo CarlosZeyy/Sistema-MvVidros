@@ -9,10 +9,19 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
 const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  },
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+        ],
+        timeout: 120000,          // Dá 2 minutos de paciência para o navegador abrir
+        protocolTimeout: 300000   // Dá 5 minutos de tolerância para o WhatsApp carregar os contatos
+    }
 });
 
 client.on("qr", (qrcodeText) => {
