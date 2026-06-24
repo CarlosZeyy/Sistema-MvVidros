@@ -29,7 +29,6 @@ services:
       - "3001:3001"
     volumes:
       - ./api-whatsapp-mvvidros:/app
-      - /app/node_modules
       # SUPER IMPORTANTE: Salva a pasta de autenticação fora do contêiner
       # para você não precisar ler o QR Code toda vez que desligar o PC!
       - .wwebjs_auth:/app/.wwebjs_auth
