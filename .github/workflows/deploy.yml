@@ -1,0 +1,31 @@
+name: Teste e deploy Automático
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar o código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Preparar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 📦 Instalar dependências do robô
+        working-directory: ./api-whatsapp-mvvidros
+        run: npm install
+
+      - name: 🧪 Rodar os testes do Jest
+        working-directory: ./api-whatsapp-mvvidros
+        run: npm test
+
+      - name: 🚀 Disparar Deploy no Coolify
+        run: |
+          curl -X POST "${{ secrets.COOLIFY_WEBHOOK_URL }}"
