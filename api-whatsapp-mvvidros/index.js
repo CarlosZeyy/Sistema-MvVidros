@@ -1,5 +1,6 @@
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+const { formatNumber } = require("./formater");
 
 const express = require("express");
 const cors = require("cors");
@@ -34,25 +35,13 @@ client.on("ready", () => {
 
 app.post("/api/send-pdf", async (req, res) => {
   try {
-    let cleanNumber = req.body.tel.replace(/\D/g, "");
-
-    if (cleanNumber.length === 8 || cleanNumber.length === 9) {
-      cleanNumber = "11" + cleanNumber;
-    }
-
-    if (!cleanNumber.startsWith("55")) {
-      cleanNumber = "55" + cleanNumber;
-    }
-
-    const tel = cleanNumber + "@c.us";
+    const tel = formatNumber(req.body.tel);
 
     if (!client.info || !client.info.wid) {
       console.log("Robô ainda não está autenticado ou pronto.");
-      return res
-        .status(503)
-        .json({
-          error: "Robô não está pronto. Tente novamente em alguns segundos.",
-        });
+      return res.status(503).json({
+        error: "Robô não está pronto. Tente novamente em alguns segundos.",
+      });
     }
 
     const pdf64Base = req.body.pdfBase64;
