@@ -12,6 +12,8 @@
 [![WhatsApp Web.js](https://img.shields.io/badge/whatsapp--web.js-1.34-25D366?logo=whatsapp&logoColor=white)](https://wwebjs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![Jest](https://img.shields.io/badge/Tested%20with-Jest-C21325?logo=jest&logoColor=white)](https://jestjs.io/)
 
 </div>
 
@@ -77,6 +79,8 @@ Em resumo: o **frontend** monta o documento e dispara os dois canais de envio; o
   - Normalização automática de números de telefone brasileiros (adiciona DDD/DDI quando necessário)
   - Autenticação persistente via QR Code (sessão salva em volume Docker)
 - 🐳 **Containerização completa** dos dois serviços com Docker Compose
+- 🧪 **Testes automatizados** com Jest para a lógica de normalização de telefone
+- 🔄 **CI/CD com GitHub Actions**, rodando os testes e disparando o deploy automaticamente a cada push na `main`
 - 🔒 Separação de segredos via variáveis de ambiente (`.env`)
 
 ---
@@ -85,6 +89,9 @@ Em resumo: o **frontend** monta o documento e dispara os dois canais de envio; o
 
 ```
 Sistema-MvVidros/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml              # Pipeline de CI/CD (testes + deploy automático)
 ├── docker-compose.yml              # Orquestra os dois serviços (frontend + bot)
 ├── .env                            # Variáveis de ambiente (EMAIL_USER, EMAIL_PASS...)
 │
@@ -110,6 +117,8 @@ Sistema-MvVidros/
 │
 └── api-whatsapp-mvvidros/          # 🤖 Bot de WhatsApp (microsserviço)
     ├── index.js                     # Servidor Express + cliente whatsapp-web.js
+    ├── formater.js                  # Normalização de números de telefone (formatNumber)
+    ├── formater.test.js             # Testes unitários (Jest) do formater.js
     ├── Dockerfile
     └── package.json
 ```
@@ -139,6 +148,11 @@ Sistema-MvVidros/
 | Integração WhatsApp | [`whatsapp-web.js`](https://wwebjs.dev/) (usa Puppeteer/Chromium internamente) |
 | Autenticação     | `LocalAuth` (sessão persistida em disco) + `qrcode-terminal` para o QR Code |
 | CORS             | `cors`                                                               |
+| Testes           | [Jest](https://jestjs.io/)                                          |
+
+### CI/CD
+
+- **GitHub Actions** para integração e entrega contínua, rodando os testes automaticamente a cada push na branch `main` e disparando o deploy.
 
 ### Infraestrutura
 
@@ -324,6 +338,42 @@ Envia um PDF em base64 para um número de WhatsApp. Consumido internamente pelo 
 
 ---
 
+## 🧪 Testes automatizados
+
+O bot de WhatsApp (`api-whatsapp-mvvidros`) possui testes unitários escritos com **[Jest](https://jestjs.io/)**, cobrindo a função `formatNumber` (responsável por normalizar números de telefone brasileiros para o formato exigido pelo `whatsapp-web.js`, ex: `5511999999999@c.us`).
+
+Para executar os testes localmente:
+
+```bash
+cd api-whatsapp-mvvidros
+npm install
+npm test
+```
+
+Casos cobertos atualmente em `formater.test.js`:
+
+- ✅ Adiciona o DDD `11` quando o usuário digita apenas 9 números
+- ✅ Não duplica o código do país `55` quando ele já foi informado
+- ✅ Remove traços, parênteses e espaços do número digitado
+
+---
+
+## 🔄 CI/CD com GitHub Actions
+
+O projeto conta com um pipeline de **integração e entrega contínua** definido em [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), disparado automaticamente a cada `push` na branch `main`:
+
+1. 📥 Faz o checkout do código (`actions/checkout`)
+2. 🟢 Configura o Node.js 20 (`actions/setup-node`)
+3. 📦 Instala as dependências do bot de WhatsApp
+4. 🧪 Executa os testes com `npm test` (Jest) — **o pipeline só avança se os testes passarem**
+5. 🚀 Caso os testes passem, dispara um webhook de deploy para o **[Coolify](https://coolify.io/)** (plataforma self-hosted usada para publicar a aplicação), autenticado via secrets do repositório
+
+> 🔐 As credenciais de deploy (`COOLIFY_WEBHOOK_URL` e `COOLIFY_TOKEN`) são armazenadas como **GitHub Secrets** e nunca expostas no código-fonte.
+
+Isso garante que nenhuma alteração quebrada chegue ao ambiente de produção sem passar antes pela suíte de testes.
+
+---
+
 ## ⚠️ Aviso importante sobre o uso do WhatsApp
 
 Este projeto utiliza a biblioteca **[`whatsapp-web.js`](https://wwebjs.dev/)**, que automatiza o WhatsApp Web de forma **não oficial** (não é a API Oficial/Cloud API do Meta). Isso significa que:
@@ -343,7 +393,8 @@ Use por sua conta e risco, especialmente em ambiente de produção.
 - [ ] Edição de orçamentos antes do reenvio
 - [ ] Painel de status da conexão do bot de WhatsApp na própria interface
 - [ ] Migração opcional para a API Oficial do WhatsApp (Cloud API)
-- [ ] Testes automatizados (unitários e end-to-end)
+- [ ] Testes automatizados também para o frontend (componentes React e rota `/api/pdf`)
+- [ ] Cobertura de testes (coverage report) integrada ao pipeline de CI
 
 ---
 
