@@ -20,8 +20,13 @@ const client = new Client({
       "--disable-accelerated-2d-canvas",
       "--disable-gpu",
     ],
-    timeout: 120000, // Dá 2 minutos de paciência para o navegador abrir
-    protocolTimeout: 300000, // Dá 5 minutos de tolerância para o WhatsApp carregar os contatos
+    timeout: 120000,
+    protocolTimeout: 300000,
+  },
+  webVersionCache: {
+    type: "remote",
+    remotePath:
+      "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
   },
 });
 
