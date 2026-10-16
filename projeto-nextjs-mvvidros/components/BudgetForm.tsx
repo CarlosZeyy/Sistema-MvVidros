@@ -40,11 +40,24 @@ export default function BudgetForm() {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        alert("Erro ao gerar o orçamento. Tente novamente.");
+        return;
+      }
+
       const result = await response.blob();
 
       const browser = URL.createObjectURL(result);
 
       window.open(browser);
+
+      const whatsAppError = response.headers.get("X-WhatsApp-Error");
+
+      if (whatsAppError) {
+        alert(
+          `O PDF foi gerado, mas não foi enviado pelo WhatsApp: ${decodeURIComponent(whatsAppError)}`,
+        );
+      }
 
       console.log("Dados enviados com sucesso!", result);
     } catch (error) {

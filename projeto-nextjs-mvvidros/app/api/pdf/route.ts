@@ -36,11 +36,23 @@ export async function POST(request: NextRequest) {
       currentDate,
       pdfBuffer,
     );
-    await sendWhatsAppBudget(data.client.tel, data.client.name, pdfBuffer);
+    const headers: Record<string, string> = {
+      "Content-Type": "application/pdf",
+    };
+
+    // Uma falha no WhatsApp não impede a entrega do PDF: o motivo vai no header para o front avisar o usuário.
+    try {
+      await sendWhatsAppBudget(data.client.tel, data.client.name, pdfBuffer);
+    } catch (error) {
+      console.error("Erro ao enviar orçamento pelo WhatsApp! ", error);
+      headers["X-WhatsApp-Error"] = encodeURIComponent(
+        error instanceof Error ? error.message : "Erro ao enviar pelo WhatsApp.",
+      );
+    }
 
     return new NextResponse(Buffer.from(pdf), {
       status: 200,
-      headers: { "Content-Type": "application/pdf" },
+      headers,
     });
   } catch (error) {
     console.error("Erro ao receber dados do pdf! ", error);
