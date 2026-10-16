@@ -23,11 +23,6 @@ const client = new Client({
     timeout: 120000,
     protocolTimeout: 300000,
   },
-  webVersionCache: {
-    type: "remote",
-    remotePath:
-      "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
-  },
 });
 
 client.on("qr", (qrcodeText) => {
@@ -49,6 +44,16 @@ app.post("/api/send-pdf", async (req, res) => {
       });
     }
 
+    // Consulta o número no servidor do WhatsApp: retorna o ID real (resolve o 9º dígito)
+    // e registra o mapeamento LID, sem o qual o envio falha com "No LID for user".
+    const numberId = await client.getNumberId(tel);
+
+    if (!numberId) {
+      return res.status(404).json({
+        message: "Este número não possui WhatsApp.",
+      });
+    }
+
     const pdf64Base = req.body.pdfBase64;
 
     const media = new MessageMedia(
@@ -57,8 +62,9 @@ app.post("/api/send-pdf", async (req, res) => {
       "orçamento.pdf",
     );
 
-    await client.sendMessage(tel, media, {
+    await client.sendMessage(numberId._serialized, media, {
       caption: `Olá ${req.body.name}, segue o orçamento em anexo. MV Vidros`,
+      sendSeen: false,
     });
 
     res.status(200).json({
