@@ -13,8 +13,6 @@ WORKDIR /app
 # Copia os arquivos de dependência e instala
 COPY package*.json ./
 RUN npm install
-# Força a instalação das bibliotecas vitais do bot
-RUN npm install whatsapp-web.js qrcode-terminal
 
 # Copia o resto do código (o seu index.js)
 COPY . .

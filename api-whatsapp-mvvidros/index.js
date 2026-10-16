@@ -62,7 +62,8 @@ app.post("/api/send-pdf", async (req, res) => {
       "orçamento.pdf",
     );
 
-    await client.sendMessage(numberId._serialized, media, {
+    // Monta o ID a partir de user/server: versões recentes do WhatsApp Web renomearam `_serialized`.
+    await client.sendMessage(`${numberId.user}@${numberId.server}`, media, {
       caption: `Olá ${req.body.name}, segue o orçamento em anexo. MV Vidros`,
       sendSeen: false,
     });
